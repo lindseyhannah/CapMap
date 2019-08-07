@@ -40,16 +40,18 @@
                        // simpleSheet assumes there is only one table and automatically sends its data
 	
 window.addEventListener('DOMContentLoaded', init);
-var map = L.map("map").setView([48.54, -125.25], 7);
+var map = L.map("map").setView([48.75, -125.20], 7);
 
 // custom dark basemap
-var basemap = L.tileLayer("https://api.mapbox.com/styles/v1/lmhannah/cjyxnr3f028kd1cp6cjj4q5ve/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoibG1oYW5uYWgiLCJhIjoiY2pvNHYzNnZ4MDBuNjNxcHUwZzR3dmR5bSJ9.c2ULzGUVCYiPhkvdiqTRZw", {
+var basemap = L.tileLayer("https://api.mapbox.com/styles/v1/lmhannah/cjxz1s2qa1d4q1cpy77g7ixbv/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoibG1oYW5uYWgiLCJhIjoiY2pvNHYzNnZ4MDBuNjNxcHUwZzR3dmR5bSJ9.c2ULzGUVCYiPhkvdiqTRZw", {
 	attribution: '&copy;<a href="https://www.mapbox.com/about/maps/">Mapbox</a>, &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>  ',
 	subdomains: "abcd",
-	maxZoom: 19
+	maxZoom: 19,
+	scrollWheelZoom: 'false'
 });
 basemap.addTo(map);
- 
+
+
 
 var pointGroupLayer;
 
@@ -68,37 +70,68 @@ function addPoints(data) {
 var ppm= (data[row].concentration_ppm)
 
 function getColor(ppm) {
+	//if (ppm <0.00001){
+		//return '#A3A4D6';}
 	if (ppm <0.00001){
-		return '#fef0d9';}
-	if (ppm <0.0001){
-		return '#fdd49e';}
+		return '#D8D8EE';}
 	if (ppm <0.001){
-		return '#fdbb84';}
-	if (ppm <0.01){
-		return '#fc8d59';}
-	if (ppm <0.1){
-		return '#e34a33';}
-	if (ppm >= 0.1){
-		return '#b30000';
-	}
-	if (ppm === "undefined"){
-		return 'white'
+		return '#A3A4D6';}
+	//if (ppm <0.01){
+		//return '#45489A';}
+	//if (ppm <0.001){
+		//return '#45489A';}
+	if (ppm <.1){
+		return '#2D2F65';
 	}
 	else{
-		return 'transparent';
+		return '#D8D8EE';
 	}
 	};
+
 	
+function getRadius(ppm) {
+	//if (ppm <0.00001){
+		//return '#A3A4D6';}
+	if (ppm <0.00001){
+		return '6';}
+	if (ppm <0.001){
+		return '10';}
+	if (ppm <0.1){
+		return '15';}
+	if (ppm === "undefined"){
+		return '0';
+	}
+	if (ppm === ""){
+		return '0';
+	}
+	if (isNaN(ppm)){
+		return '0';
+	}
+	else{
+		return '0'
+	}
+	};
+
+
+
+/*
 function getRadius(ppm){
 	if (ppm <= 0.00001) {
 		return '5';
 		};
-	if (ppm <0.001){
-		return '10';
-			} 
-	if (ppm <0.1){
-		return '15'	
+	//if (ppm <0.0001){
+	//	return '5';
+		//	} 
+	if (ppm <0.0001){
+		return '7'	
 		;} 
+	if (ppm <.001){
+		return '9';
+	}
+	if (ppm <1){
+		return '12';
+	}
+	
 	else{
 		return '0';
 	}
@@ -127,9 +160,28 @@ function getOutline(ppm){
 		return 'false'
 	}
 }
-*/	
-    	var marker = L.circleMarker([data[row].lat, data[row].long], {radius: getRadius(ppm), fillOpacity: .6, color: getColor(ppm), fillColor: getColor(ppm)}).addTo(pointGroupLayer);
-      	marker.bindPopup(("<h2>"+ "Sample ID: " + data[row].sample_id + "<br>"+  "Microplastic Concentration is: " + data[row].concentration_ppm + " ppm" + "</h2>"));
+
+    	var legend= L.control({position: 'bottomleft'});
+
+    	legend.onAdd= function (map) {
+    		var div= L.DomUtil.create('div', 'infolegend'),
+    			grades= [0.00001, 0.0001, 0.001, 1],
+    			labels= [];
+    	    for (var i = 0; i < grades.length; i++) {
+       			 div.innerHTML +=
+            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+   			 }
+
+    return div;
+};
+
+legend.addTo(map);
+ */   
+
+    	var marker = L.circleMarker([data[row].lat, data[row].long], {radius: getRadius(ppm), fillOpacity: .7, color: getColor(ppm), fillColor: getColor(ppm)}).addTo(pointGroupLayer);
+
+      	marker.bindPopup(("<h2>"+ "Sample Year: " + data[row].sample_year+ "<br>"+ "Sample ID: " + data[row].sample_id + "<br>"+ "Microplastic Concentration is: " + data[row].concentration_ppm + " mg/L" + "</h2>"));
 
   	}
 }
